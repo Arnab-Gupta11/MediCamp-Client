@@ -1,5 +1,4 @@
 import {
-  Avatar,
   Box,
   Button,
   Container,
@@ -22,22 +21,30 @@ import { useFormik } from "formik";
 import { FcGoogle } from "react-icons/fc";
 import { FaFacebook } from "react-icons/fa";
 import { imageUpload } from "../../utils/uploadImage";
+import { regiterValidation } from "../../schema/registerSchema";
+import RingLoader from "react-spinners/RingLoader";
 
 const Register = () => {
   const [showPassword, setShowPassword] = useState(false);
+  const [confirmPassword, setConfirmPassword] = useState(false);
+  const [loading, setLoading] = useState(false);
   //set visibility of password
   const handleClickShowPassword = () => setShowPassword((show) => !show);
+  const handleClickConfirmPassword = () => setConfirmPassword((show) => !show);
   const initialValues = {
     name: "",
     email: "",
     role: "",
     password: "",
+    confirmPassword: "",
     image: null,
   };
   //use formik to get data
-  const { values, errors, handleBlur, handleChange, handleSubmit, setFieldValue } = useFormik({
+  const { values, errors, handleBlur, handleChange, touched, handleSubmit, setFieldValue } = useFormik({
     initialValues: initialValues,
+    validationSchema: regiterValidation,
     onSubmit: async (values) => {
+      setLoading(true);
       const imageUrl = await imageUpload(values.image);
 
       const newUser = {
@@ -47,6 +54,7 @@ const Register = () => {
         image: imageUrl,
       };
       console.log("🚀 ~ onSubmit: ~ newUser:", newUser);
+      setLoading(false);
     },
   });
   const handleFileChange = async (event) => {
@@ -61,7 +69,6 @@ const Register = () => {
         boxShadow="0 4px 8px 0 rgba(0, 0, 0, 0.2), 0 6px 20px 0 rgba(0, 0, 0, 0.19)"
         mx="auto"
         borderRadius="10px 10px"
-        // border="2px solid"
         borderColor="secondary.main"
         sx={{ backgroundColor: "#FFFFFF" }}
         mb="20px"
@@ -103,6 +110,12 @@ const Register = () => {
                     onChange={handleChange}
                     onBlur={handleBlur}
                   />
+                  {/*------------ error message --------------*/}
+                  {touched.name && errors.name ? (
+                    <Typography variant="caption" color="red">
+                      {errors.name}
+                    </Typography>
+                  ) : null}
                 </FormControl>
               </Grid>
               <Grid item xs={12} md={6}>
@@ -130,6 +143,12 @@ const Register = () => {
                     <MenuItem value={"organizer"}>Organizer</MenuItem>
                     <MenuItem value={"doctor"}>Doctor</MenuItem>
                   </Select>
+                  {/*------------ error message --------------*/}
+                  {touched.role && errors.role ? (
+                    <Typography variant="caption" color="red">
+                      {errors.role}
+                    </Typography>
+                  ) : null}
                 </FormControl>
               </Grid>
             </Grid>
@@ -156,8 +175,44 @@ const Register = () => {
                     onChange={handleChange}
                     onBlur={handleBlur}
                   />
+                  {/*------------ error message --------------*/}
+                  {touched.email && errors.email ? (
+                    <Typography variant="caption" color="red">
+                      {errors.email}
+                    </Typography>
+                  ) : null}
                 </FormControl>
               </Grid>
+              <Grid item xs={12} md={6}>
+                {/*--------------- Image field ----------------*/}
+                <FormControl fullWidth sx={{ mt: "10px" }} variant="outlined">
+                  <Typography fontWeight="500" color="#495057">
+                    Image
+                  </Typography>
+                  <TextField
+                    name="image"
+                    type="file"
+                    size="medium"
+                    InputProps={{
+                      style: { fontSize: "16px", fontWeight: "inherit", color: "#495057" },
+                    }}
+                    sx={{ mt: "5px", backgroundColor: primaryBg }}
+                    //get dat using formik
+                    // value={values.image}
+                    onChange={handleFileChange}
+                    onBlur={handleBlur}
+                  />
+                  {/*------------ error message --------------*/}
+                  {touched.image && errors.image ? (
+                    <Typography variant="caption" color="red">
+                      {errors.image}
+                    </Typography>
+                  ) : null}
+                </FormControl>
+              </Grid>
+            </Grid>
+
+            <Grid container spacing={{ xs: 0, md: 5 }} alignItems="center" justifyContent="center">
               <Grid item xs={12} md={6}>
                 {/*--------------- Password Field ----------------*/}
                 <FormControl fullWidth sx={{ mt: "10px" }} variant="outlined">
@@ -181,29 +236,46 @@ const Register = () => {
                     onChange={handleChange}
                     onBlur={handleBlur}
                   />
+                  {/*------------ error message --------------*/}
+                  {touched.password && errors.password ? (
+                    <Typography variant="caption" color="red">
+                      {errors.password}
+                    </Typography>
+                  ) : null}
+                </FormControl>
+              </Grid>
+              <Grid item xs={12} md={6}>
+                {/*--------------- Confirm Password Field ----------------*/}
+                <FormControl fullWidth sx={{ mt: "10px" }} variant="outlined">
+                  <Typography fontWeight="500" color="#495057">
+                    Confirm Password
+                  </Typography>
+                  <OutlinedInput
+                    name="confirmPassword"
+                    type={confirmPassword ? "text" : "password"}
+                    endAdornment={
+                      <InputAdornment position="end">
+                        <IconButton aria-label="toggle password visibility" onClick={handleClickConfirmPassword} edge="end">
+                          {confirmPassword ? <VisibilityOff /> : <Visibility />}
+                        </IconButton>
+                      </InputAdornment>
+                    }
+                    sx={{ mt: "5px", backgroundColor: primaryBg }}
+                    placeholder="Confirm Password"
+                    //get dat using formik
+                    value={values.confirmPassword}
+                    onChange={handleChange}
+                    onBlur={handleBlur}
+                  />
+                  {/*------------ error message --------------*/}
+                  {touched.confirmPassword && errors.confirmPassword ? (
+                    <Typography variant="caption" color="red">
+                      {errors.confirmPassword}
+                    </Typography>
+                  ) : null}
                 </FormControl>
               </Grid>
             </Grid>
-
-            {/*--------------- Image field ----------------*/}
-            <FormControl fullWidth sx={{ mt: "10px" }} variant="outlined">
-              <Typography fontWeight="500" color="#495057">
-                Image
-              </Typography>
-              <TextField
-                name="image"
-                type="file"
-                size="medium"
-                InputProps={{
-                  style: { fontSize: "16px", fontWeight: "inherit", color: "#495057" },
-                }}
-                sx={{ mt: "5px", backgroundColor: primaryBg }}
-                //get dat using formik
-                // value={values.image}
-                onChange={handleFileChange}
-                onBlur={handleBlur}
-              />
-            </FormControl>
 
             {/*--------------- Submit Button ----------------*/}
             <Button
@@ -212,13 +284,13 @@ const Register = () => {
               fullWidth
               sx={{ mt: "20px", ":hover": { backgroundColor: "#f74c4c" }, fontWeight: "bold", textTransform: "none" }}
             >
-              SignUp
+              {loading ? <RingLoader size={20} color="#000000" /> : "Signup"}
             </Button>
           </form>
         </Box>
 
         <Typography maxWidth="80%" mx="auto">
-          Already have an Account? <Button sx={{ textTransform: "none" }}>SignIn</Button>
+          Already have an Account? <Button sx={{ textTransform: "none" }}>Sign up</Button>
         </Typography>
 
         <Divider variant="middle">or</Divider>
