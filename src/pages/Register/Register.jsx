@@ -30,9 +30,9 @@ const Register = () => {
   const [confirmPassword, setConfirmPassword] = useState(false);
   const [loading, setLoading] = useState(false);
 
-  const { facebookLogin } = useAuth();
+  const { facebookLogin, googleLogin, createUser, updateUserProfile } = useAuth();
 
-  //<------------ set visibility of password -------------->
+  //<------------ Set visibility of password -------------->
   const handleClickShowPassword = () => setShowPassword((show) => !show);
   const handleClickConfirmPassword = () => setConfirmPassword((show) => !show);
 
@@ -46,27 +46,38 @@ const Register = () => {
     image: null,
   };
 
-  //<----------- handle image ----------------->
+  //<----------- Handle image ----------------->
   const handleImageChange = async (event) => {
     const file = event.currentTarget.files[0];
     setFieldValue("image", file);
   };
 
-  //<------------ use formik to get data -------------->
+  //<------------ Use formik to get data -------------->
   const { values, errors, handleBlur, handleChange, touched, handleSubmit, setFieldValue } = useFormik({
     initialValues: initialValues,
     validationSchema: regiterValidation,
     onSubmit: async (values) => {
       setLoading(true);
-      const imageUrl = await imageUpload(values.image);
 
-      const newUser = {
-        name: values.name,
-        email: values.email,
-        role: values.role,
-        image: imageUrl,
-      };
-      console.log("🚀 ~ onSubmit: ~ newUser:", newUser);
+      try {
+        //<------------ Upload Image ------------->
+        const imageUrl = await imageUpload(values.image);
+
+        //<------------ Create User ------------->
+        const result = await createUser(values.email, values.password);
+        await updateUserProfile(values.name, imageUrl);
+        console.log("🚀 ~ onSubmit: ~ result:", result.user);
+
+        const newUser = {
+          name: values.name,
+          email: values.email,
+          role: values.role,
+          image: imageUrl,
+        };
+      } catch (error) {
+        console.log("🚀 ~ onSubmit: ~ error:", error);
+      }
+
       setLoading(false);
     },
   });
@@ -78,6 +89,15 @@ const Register = () => {
       console.log(result.user);
     } catch (error) {
       console.log("🚀 ~ handleFacebookLogin ~ error:", error);
+    }
+  };
+  //<------------ Google Login -------------->
+  const handleGoogleLogin = async () => {
+    try {
+      const result = await googleLogin();
+      console.log(result.user);
+    } catch (error) {
+      console.log("🚀 ~ handleGoogleLogin ~ error:", error);
     }
   };
 
@@ -316,15 +336,16 @@ const Register = () => {
         <Box pb="20px" pt="10px" borderRadius="0px 0px 10px 10px">
           <Grid container spacing={6} justifyContent="center">
             <Grid item sx={4}>
+              <IconButton onClick={handleGoogleLogin}>
+                <FcGoogle />
+              </IconButton>
+            </Grid>
+            <Grid item sx={4}>
               <IconButton onClick={handleFacebookLogin} sx={{ color: "blue" }} aria-label="delete">
                 <FaFacebook />
               </IconButton>
             </Grid>
-            <Grid item sx={4}>
-              <IconButton>
-                <FcGoogle />
-              </IconButton>
-            </Grid>
+
             <Grid item sx={4}>
               <IconButton sx={{ color: "black" }} aria-label="delete">
                 <GitHub />

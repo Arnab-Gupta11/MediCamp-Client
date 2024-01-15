@@ -1,8 +1,10 @@
-import { createContext, useState } from "react";
+import { createContext, useEffect, useState } from "react";
 import PropTypes from "prop-types";
 import {
   FacebookAuthProvider,
+  GoogleAuthProvider,
   createUserWithEmailAndPassword,
+  onAuthStateChanged,
   signInWithEmailAndPassword,
   signInWithPopup,
   signOut,
@@ -15,6 +17,7 @@ const Authprovider = ({ children }) => {
   const [user, setUser] = useState(null);
   const [loading, setLoading] = useState(true);
   const facebookProvider = new FacebookAuthProvider();
+  const googleProvider = new GoogleAuthProvider();
 
   //<--------- Create User ----------->
   const createUser = (email, password) => {
@@ -42,13 +45,30 @@ const Authprovider = ({ children }) => {
     });
   };
 
+  //<--------- Google Login ----------->
+  const googleLogin = () => {
+    setLoading(true);
+    return signInWithPopup(auth, googleProvider);
+  };
+
   //<--------- Facebook Login ----------->
   const facebookLogin = () => {
     setLoading(true);
     return signInWithPopup(auth, facebookProvider);
   };
 
-  const authInfo = { createUser, loginUser, logOutUser, updateUserProfile, loading, facebookLogin };
+  //<--------- Set Observer to track user ----------->
+  useEffect(() => {
+    const unsubscribe = onAuthStateChanged(auth, (currentUser) => {
+      setUser(currentUser);
+    });
+    return () => {
+      unsubscribe();
+    };
+  }, []);
+  console.log("Observe ", user);
+
+  const authInfo = { createUser, loginUser, logOutUser, updateUserProfile, loading, facebookLogin, googleLogin };
   return <AuthContext.Provider value={authInfo}>{children}</AuthContext.Provider>;
 };
 
