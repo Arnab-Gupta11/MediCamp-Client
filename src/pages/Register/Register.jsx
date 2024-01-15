@@ -23,14 +23,20 @@ import { FaFacebook } from "react-icons/fa";
 import { imageUpload } from "../../utils/uploadImage";
 import { regiterValidation } from "../../schema/registerSchema";
 import RingLoader from "react-spinners/RingLoader";
+import useAuth from "../../hooks/useAuth";
 
 const Register = () => {
   const [showPassword, setShowPassword] = useState(false);
   const [confirmPassword, setConfirmPassword] = useState(false);
   const [loading, setLoading] = useState(false);
-  //set visibility of password
+
+  const { facebookLogin } = useAuth();
+
+  //<------------ set visibility of password -------------->
   const handleClickShowPassword = () => setShowPassword((show) => !show);
   const handleClickConfirmPassword = () => setConfirmPassword((show) => !show);
+
+  //<----------- Set initial value for form data ------------->
   const initialValues = {
     name: "",
     email: "",
@@ -39,7 +45,14 @@ const Register = () => {
     confirmPassword: "",
     image: null,
   };
-  //use formik to get data
+
+  //<----------- handle image ----------------->
+  const handleImageChange = async (event) => {
+    const file = event.currentTarget.files[0];
+    setFieldValue("image", file);
+  };
+
+  //<------------ use formik to get data -------------->
   const { values, errors, handleBlur, handleChange, touched, handleSubmit, setFieldValue } = useFormik({
     initialValues: initialValues,
     validationSchema: regiterValidation,
@@ -57,9 +70,15 @@ const Register = () => {
       setLoading(false);
     },
   });
-  const handleFileChange = async (event) => {
-    const file = event.currentTarget.files[0];
-    setFieldValue("image", file);
+
+  //<------------ Facebook Login -------------->
+  const handleFacebookLogin = async () => {
+    try {
+      const result = await facebookLogin();
+      console.log(result.user);
+    } catch (error) {
+      console.log("🚀 ~ handleFacebookLogin ~ error:", error);
+    }
   };
 
   return (
@@ -87,7 +106,7 @@ const Register = () => {
 
         <Box maxWidth="80%" mx="auto" pb="20px">
           <form onSubmit={handleSubmit}>
-            {/* name and role container */}
+            {/*----------- name and role container -----------*/}
             <Grid container spacing={{ xs: 0, md: 5 }} alignItems="center" justifyItems="center">
               <Grid item xs={12} md={6}>
                 {/*--------------- Name field ----------------*/}
@@ -153,7 +172,7 @@ const Register = () => {
               </Grid>
             </Grid>
 
-            {/* email and password container */}
+            {/*---------- email and image container ----------*/}
             <Grid container spacing={{ xs: 0, md: 5 }} alignItems="center" justifyContent="center">
               <Grid item xs={12} md={6}>
                 {/*--------------- Email field ----------------*/}
@@ -198,8 +217,7 @@ const Register = () => {
                     }}
                     sx={{ mt: "5px", backgroundColor: primaryBg }}
                     //get dat using formik
-                    // value={values.image}
-                    onChange={handleFileChange}
+                    onChange={handleImageChange}
                     onBlur={handleBlur}
                   />
                   {/*------------ error message --------------*/}
@@ -212,6 +230,7 @@ const Register = () => {
               </Grid>
             </Grid>
 
+            {/*---------- password and confirm password container ----------*/}
             <Grid container spacing={{ xs: 0, md: 5 }} alignItems="center" justifyContent="center">
               <Grid item xs={12} md={6}>
                 {/*--------------- Password Field ----------------*/}
@@ -297,7 +316,7 @@ const Register = () => {
         <Box pb="20px" pt="10px" borderRadius="0px 0px 10px 10px">
           <Grid container spacing={6} justifyContent="center">
             <Grid item sx={4}>
-              <IconButton sx={{ color: "blue" }} aria-label="delete">
+              <IconButton onClick={handleFacebookLogin} sx={{ color: "blue" }} aria-label="delete">
                 <FaFacebook />
               </IconButton>
             </Grid>
