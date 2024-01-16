@@ -38,9 +38,9 @@ function Navbar() {
   };
 
   return (
-    <AppBar sx={{ backgroundColor: secondary }} position="static">
-      <Container maxWidth="xl">
-        <Toolbar disableGutters>
+    <AppBar sx={{ backgroundColor: secondary }} >
+      <Container maxWidth="lg">
+        <Toolbar>
           <AdbIcon sx={{ display: { xs: 'none', md: 'flex' }, mr: 1 }} />
           <Typography
             variant="h6"
